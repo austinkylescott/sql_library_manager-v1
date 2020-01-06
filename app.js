@@ -21,8 +21,13 @@ Book.init(
         notEmpty: true
       }
     },
-    genre: Sequelize.STRING,
-    year: Sequelize.INTEGER
+    genre: { type: Sequelize.STRING },
+    year: {
+      type: Sequelize.INTEGER,
+      validate: {
+        isInt: true
+      }
+    }
   },
   { sequelize }
 );
@@ -37,38 +42,96 @@ Book.init(
   }
 })();
 
+// Handler function for each route
+function asyncHandler(cb) {
+  return async (req, res, next) => {
+    try {
+      await cb(req, res, next);
+    } catch (error) {
+      res.status(500).send(error);
+    }
+  };
+}
+
 //Express Setup
 const express = require("express");
 const app = express();
 app.set("views", "./public/views");
 app.set("view engine", "pug");
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 //Express Routes
 //ALL BOOKS
-app.get("/", (req, res) => res.redirect("/books"));
-app.get("/books", (req, res) =>
-  Book.findAll().then(books => {
-    res.render("index", { heading: "Books", books: books });
-  })
-);
-//ADD NEW BOOK
-app.get("/books/new", (req, res) =>
-  res.render("new_book", { heading: "Create New Book" })
-);
-
-app.post("/books/new", (req, res) => res.send("/books/new"));
-
-//UPDATE EXISTING BOOK
-app.get("/books/:id", (req, res) =>
-  Book.findByPk(req.params.id).then(book => {
-    res.render("book_detail", { heading: "Update Existing Book", book: book });
+app.get(
+  "/",
+  asyncHandler(async (req, res) => {
+    res.redirect("/books");
   })
 );
 
-app.post("/books/:id", (req, res) => res.send("/books/:id"));
+app.get(
+  "/books",
+  asyncHandler(async (req, res) => {
+    Book.findAll().then(books => {
+      res.render("index", { heading: "Books", books: books });
+    });
+  })
+);
 
-//DELETE BOOK
-app.post("/books/:id/delete", (req, res) => res.send("/books/:id/delete"));
+//*********************
+//*ADD NEW BOOK
+//*********************
+app.get(
+  "/books/new",
+  asyncHandler(async (req, res) => {
+    res.render("new_book", { heading: "Create New Book" });
+  })
+);
+
+app.post(
+  "/books/new",
+  asyncHandler(async (req, res) => {
+    const book = await Book.create(req.body);
+    res.redirect("/books/" + book.id);
+  })
+);
+//*********************
+//*UPDATE EXISTING BOOK
+//*********************
+
+app.get(
+  "/books/:id",
+  asyncHandler(async (req, res) => {
+    Book.findByPk(req.params.id).then(book => {
+      res.render("book_detail", {
+        heading: "Update Existing Book",
+        book: book
+      });
+    });
+  })
+);
+
+app.post(
+  "/books/:id",
+  asyncHandler(async (req, res) => {
+    const book = await Book.findByPk(req.params.id);
+    await book.update(req.body);
+    res.redirect("/books/" + book.id);
+  })
+);
+
+//*********************
+//*DELETE BOOK
+//*********************
+app.post(
+  "/books/:id/delete",
+  asyncHandler(async (req, res) => {
+    const book = await Book.findByPk(req.params.id);
+    await book.destroy();
+    res.redirect("/books");
+  })
+);
 
 // //404 Error
 // app.use(function(err, req, res, next) {
@@ -76,4 +139,4 @@ app.post("/books/:id/delete", (req, res) => res.send("/books/:id/delete"));
 //   res.status(404).render("ERROR ERROR ERROR");
 // });
 
-app.listen(5500, () => console.log("Example app listening on port 5500"));
+app.listen(5500, () => console.log("App listening on port 5500"));
