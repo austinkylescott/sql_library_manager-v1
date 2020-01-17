@@ -1,6 +1,7 @@
 extends layout.pug
 block content
   form(method="POST")
+    include form_error.pug
     p
       label(for="title") Title
       input(name="title" type="text" id="title")
