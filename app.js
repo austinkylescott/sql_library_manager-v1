@@ -2,24 +2,25 @@
 const express = require("express");
 const app = express();
 const path = require("path");
-const sequelize = require("sequelize");
+const sequelize = require("./models").sequelize;
 
-const routes = require("./public/routes/index");
-const books = require("./public/routes/books");
+const routes = require("./routes/index");
+const books = require("./routes/books");
 
-// //async IIFE
-// (async () => {
-//   await sequelize.sync();
+//async IIFE
+(async () => {
+  await sequelize.sync();
 
-//   try {
-//   } catch (error) {
-//     console.error("Error connecting to database: ", error);
-//   }
-// })();
+  try {
+  } catch (error) {
+    console.error("Error connecting to database: ", error);
+    throw error;
+  }
+})();
 
 //Establish Routes and views
 app.use("/static", express.static(path.join(__dirname, "/public")));
-app.set("views", "./public/views");
+app.set("views", "./views");
 app.set("view engine", "pug");
 app.use("/", routes);
 app.use("/books", books);

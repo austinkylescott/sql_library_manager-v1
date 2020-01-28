@@ -1,6 +1,6 @@
 extends layout.pug
 block content
-  form(method="POST")
+  form(method="POST" action="/books/"+book.id+"/edit")
     include form_error.pug
     p
       label(for="title") Title
