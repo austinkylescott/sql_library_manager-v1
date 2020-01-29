@@ -22,10 +22,10 @@ const books = require("./routes/books");
 app.use("/static", express.static(path.join(__dirname, "/public")));
 app.set("views", "./views");
 app.set("view engine", "pug");
-app.use("/", routes);
-app.use("/books", books);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use("/", routes);
+app.use("/books", books);
 
 //404 Error
 app.use((req, res, next) => {
