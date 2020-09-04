@@ -42,6 +42,6 @@ app.use((err, req, res, next) => {
   res.render("page_not_found", { heading: "Page Not Found" });
 });
 
-app.listen(5500, () => console.log("App listening on port 5500"));
+app.listen(5500, () => console.log("App is listening on port 5500"));
 
 module.exports = app;
